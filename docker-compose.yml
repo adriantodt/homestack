@@ -11,7 +11,7 @@ services:
       - ${STACK_ROOT}/services/portainer/data:/data
     ports:
       - "${PORT_PORTAINER_MAIN}:9000"
-      #- "$disabled{PORT_PORTAINER_MAIN_SECURE}:9443"
+      #- "$disabled{PORT_PORTAINER_MAIN_SECURE}:9443" # HTTPS port
     restart: unless-stopped
 
   qbittorrent:
@@ -41,4 +41,23 @@ services:
       - ${STACK_ROOT}/files:/srv
     ports:
       - "${PORT_FILEBROWSER_MAIN}:80"
-      
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin
+    environment:
+      - "PUID=${FILE_OWNER_PUID}"
+      - "PGID=${FILE_OWNER_PGID}"
+      - "TZ=${LINUXSERVER_TZ}"
+      - "JELLYFIN_PublishedServerUrl=${EXPOSED_URL}"
+    volumes:
+      - ${STACK_ROOT}/services/jellyfin/config:/config
+      - ${STACK_ROOT}/files:/data
+    ports:
+      - "${PORT_JELLYFIN_MAIN}:8096"
+      #- 8920:8920 # HTTPS port
+      - 7359:7359/udp # Autodiscover
+      - 1900:1900/udp # DLNA
+    restart: unless-stopped
+    
+    
+    
