@@ -1,0 +1,9 @@
+#
+# Usage: docker-compose -f docker-compose.yml -f mod.amd-gpu.yml <up/down/config>
+#
+services:
+  jellyfin:
+    devices:
+      - "/dev/dri:/dev/dri" # Direct Rendering Manager
+    environment:
+      - "DOCKER_MODS=linuxserver/mods:jellyfin-amd" # Add Linuxserver AMD mod

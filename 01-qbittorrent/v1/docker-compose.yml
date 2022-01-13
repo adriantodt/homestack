@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent
+    environment:
+      - "PUID=${STACK_FS_PUID}"
+      - "PGID=${STACK_FS_PGID}"
+      - "TZ=${SERVER_TZ}"
+      - "WEBUI_PORT=${PORT_QBITTORRENT_HTTP}"
+    volumes:
+      - "${STACK_ROOT}/services/qbittorrent/config:/config"
+      - "${STACK_ROOT}/files/Downloads:/downloads"
+    ports:
+      - "6881:6881"
+      - "6881:6881/udp"
+      - "${PORT_QBITTORRENT_HTTP}:${PORT_QBITTORRENT_HTTP}"
+    restart: unless-stopped

@@ -1,0 +1,19 @@
+version: '3.9'
+
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin
+    environment:
+      - "PUID=${STACK_FS_PUID}"
+      - "PGID=${STACK_FS_PGID}"
+      - "TZ=${SERVER_TZ}"
+      - "JELLYFIN_PublishedServerUrl=${SERVER_URL}:${PORT_JELLYFIN_HTTP}"
+    volumes:
+      - "${STACK_ROOT}/services/jellyfin/config:/config"
+      - "${STACK_ROOT}/files:/data"
+    ports:
+      - "${PORT_JELLYFIN_HTTP}:8096"
+      - "${PORT_JELLYFIN_HTTPS}:8920"
+      - "7359:7359/udp" # Jellyfin Autodiscover
+      - "1900:1900/udp" # DLNA
+    restart: unless-stopped

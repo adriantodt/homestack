@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:s6
+    environment:
+      - "PUID=${STACK_FS_PUID}"
+      - "PGID=${STACK_FS_PGID}"
+    volumes:
+      - "${STACK_ROOT}/services/filebrowser/config:/config"
+      - "${STACK_ROOT}/services/filebrowser/database:/database"
+      - "${STACK_ROOT}/files:/srv"
+    ports:
+      - "${PORT_FILEBROWSER_HTTP}:80"

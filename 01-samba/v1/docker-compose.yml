@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  samba:
+    image: dperson/samba
+    environment:
+      - "TZ=${SERVER_TZ}"
+      - "USERID=${STACK_FS_PUID}"
+      - "GROUPID=${STACK_FS_PGID}"
+      - "USER=${SMB_USER};${SMB_PASS}"
+      - "SHARE=${SMB_SHARE_NAME};/files;yes;no;no;${SMB_USER}"
+      - "WORKGROUP=${SMB_GROUP}"
+    volumes:
+      - "${STACK_ROOT}/files:/files"
+    ports:
+      - "139:139" # NetBIOS
+      - "445:445" # SMB
+    restart: unless-stopped
