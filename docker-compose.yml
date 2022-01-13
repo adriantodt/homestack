@@ -6,58 +6,75 @@ services:
     image: portainer/portainer-ce
     #user: "${FILE_OWNER_PUID}:${FILE_OWNER_PGID}"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/lib/docker/volumes:/var/lib/docker/volumes
-      - ${STACK_ROOT}/services/portainer/data:/data
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/var/lib/docker/volumes:/var/lib/docker/volumes"
+      - "${STACK_ROOT}/services/portainer/data:/data"
+      - "${STACK_ROOT}:/stack-root"
     ports:
-      - "${PORT_PORTAINER_MAIN}:9000"
-      #- "$disabled{PORT_PORTAINER_MAIN_SECURE}:9443" # HTTPS port
+      - "${PORT_PORTAINER_HTTP}:9000"
+      - "${PORT_PORTAINER_HTTPS}:9443"
     restart: unless-stopped
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent
     environment:
-      - "PUID=${FILE_OWNER_PUID}"
-      - "PGID=${FILE_OWNER_PGID}"
-      - "TZ=${LINUXSERVER_TZ}"
-      - "WEBUI_PORT=${PORT_QBITTORRENT_MAIN}"
+      - "PUID=${STACK_FS_PUID}"
+      - "PGID=${STACK_FS_PGID}"
+      - "TZ=${SERVER_TZ}"
+      - "WEBUI_PORT=${PORT_QBITTORRENT_HTTP}"
     volumes:
-      - ${STACK_ROOT}/services/qbittorrent/config:/config
-      - ${STACK_ROOT}/files/Downloads:/downloads
+      - "${STACK_ROOT}/services/qbittorrent/config:/config"
+      - "${STACK_ROOT}/files/Downloads:/downloads"
     ports:
       - "6881:6881"
       - "6881:6881/udp"
-      - "${PORT_QBITTORRENT_MAIN}:${PORT_QBITTORRENT_MAIN}"
+      - "${PORT_QBITTORRENT_HTTP}:${PORT_QBITTORRENT_HTTP}"
     restart: unless-stopped
 
   filebrowser:
     image: filebrowser/filebrowser:s6
     environment:
-      - "PUID=${FILE_OWNER_PUID}"
-      - "PGID=${FILE_OWNER_PGID}"
+      - "PUID=${STACK_FS_PUID}"
+      - "PGID=${STACK_FS_PGID}"
     volumes:
-      - ${STACK_ROOT}/services/filebrowser/config:/config
-      - ${STACK_ROOT}/services/filebrowser/database:/database
-      - ${STACK_ROOT}/files:/srv
+      - "${STACK_ROOT}/services/filebrowser/config:/config"
+      - "${STACK_ROOT}/services/filebrowser/database:/database"
+      - "${STACK_ROOT}/files:/srv"
     ports:
-      - "${PORT_FILEBROWSER_MAIN}:80"
+      - "${PORT_FILEBROWSER_HTTP}:80"
 
   jellyfin:
     image: lscr.io/linuxserver/jellyfin
     environment:
-      - "PUID=${FILE_OWNER_PUID}"
-      - "PGID=${FILE_OWNER_PGID}"
-      - "TZ=${LINUXSERVER_TZ}"
-      - "JELLYFIN_PublishedServerUrl=${EXPOSED_URL}"
+      - "PUID=${STACK_FS_PUID}"
+      - "PGID=${STACK_FS_PGID}"
+      - "TZ=${SERVER_TZ}"
+      - "JELLYFIN_PublishedServerUrl=${SERVER_URL}:${PORT_JELLYFIN_HTTP}"
     volumes:
-      - ${STACK_ROOT}/services/jellyfin/config:/config
-      - ${STACK_ROOT}/files:/data
+      - "${STACK_ROOT}/services/jellyfin/config:/config"
+      - "${STACK_ROOT}/files:/data"
     ports:
-      - "${PORT_JELLYFIN_MAIN}:8096"
-      #- 8920:8920 # HTTPS port
-      - 7359:7359/udp # Autodiscover
-      - 1900:1900/udp # DLNA
+      - "${PORT_JELLYFIN_HTTP}:8096"
+      - "${PORT_JELLYFIN_HTTPS}:8920"
+      - "7359:7359/udp" # Jellyfin Autodiscover
+      - "1900:1900/udp" # DLNA
+    devices:
+      - "/dev/dri:/dev/dri" # Intel QuickSync
     restart: unless-stopped
-    
-    
-    
+
+  samba:
+    image: dperson/samba
+    environment:
+      - "TZ=${SERVER_TZ}"
+      - "USERID=${STACK_FS_PUID}"
+      - "GROUPID=${STACK_FS_PGID}"
+      - "USER=${SMB_USER};${SMB_PASS}"
+      - "SHARE=Vault;/files;yes;no;no;${SMB_USER}"
+      - "WORKGROUP=${SMB_USER}"
+    volumes:
+      - "${STACK_ROOT}/files:/files"
+    ports:
+      - "139:139" # NetBIOS
+      - "445:445" # SMB
+    restart: unless-stopped
+
