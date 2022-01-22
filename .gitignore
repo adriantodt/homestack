@@ -3,3 +3,6 @@ run
 
 # .env file
 .env
+
+# IDEs
+.idea
