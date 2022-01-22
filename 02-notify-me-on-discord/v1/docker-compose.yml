@@ -1,14 +1,15 @@
 version: '3.9'
 
 services:
-  notify-me-on-discord:
-    image: ghcr.io/adriantodt/notify-me-on-discord:v0.1.0
+  notifymeondiscord:
+    image: ghcr.io/adriantodt/notify-me-on-discord:v0.1.1
     environment:
       - "USER_TO_MENTION=${USER_TO_MENTION}"
       - "URL_QBITTORRENT=${URL_QBITTORRENT}"
       - "URL_FILEBROWSER=${URL_FILEBROWSER}"
       - "URL_JELLYFIN=${URL_JELLYFIN}"
       - "WEBHOOK_URL=${WEBHOOK_URL}"
+      - "GIN_MODE=release"
     ports:
       - "${PORT_NOTIFYMEONDISCORD_HTTP}:8080"
     restart: unless-stopped
